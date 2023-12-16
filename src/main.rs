@@ -13,7 +13,10 @@ struct Arguments {
 
 fn copy_directories(source_path: &Path, dest_path: &Path) -> Result<(), std::io::Error> {
     if !source_path.is_dir() {
-        return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "Source path is not a directory"));
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "Source path is not a directory",
+        ));
     }
 
     fs::create_dir_all(dest_path)?;
