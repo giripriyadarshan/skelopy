@@ -1,0 +1,47 @@
+name: release
+
+on:
+  push:
+    tags:
+      - v*
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: /home/runner/work/skelopy/skelopy/target/x86_64-unknown-linux-gnu/release/skelopy
+            asset_name: skelopy-linux-amd64-${{github.ref_name}}
+            target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            artifact_name: /Users/runner/work/skelopy/skelopy/target/x86_64-apple-darwin/release/skelopy
+            asset_name: skelopy-apple-amd64-${{github.ref_name}}
+            target: x86_64-apple-darwin
+          - os: windows-latest
+            artifact_name: D:\a\skelopy\skelopy\target\x86_64-pc-windows-msvc\release\skelopy.exe
+            asset_name: skelopy-windows-amd64-${{github.ref_name}}.exe
+            target: x86_64-pc-windows-msvc
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }} --locked
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.asset_name }}
+          path: ${{ matrix.artifact_name }}
+
+      - name: Upload binary to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ github.token }}
+          file: ${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.ref }}
